@@ -1,21 +1,24 @@
 const { response } = require('express')
 const express = require('express')
 const morgan = require('morgan')
+const cors = require('cors')
+
 
 const app = express()
+app.use(cors())
 app.use(express.json())
 
 morgan.token("body", (req, res) => {
 	if(req.method === 'POST'){
 		return JSON.stringify(req.body)
 	}
-
+	
 	return " "
 })
 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
-const PORT = 3001
+const PORT = process.env.PORT || 3001
 
 const requestLogger = (req, res, next) => {
 	console.log("Method:", req.method)
@@ -28,10 +31,10 @@ const requestLogger = (req, res, next) => {
 // app.use(requestLogger)
 
 let persons = [
-    { 
-      "id": 1,
-      "name": "Arto Hellas", 
-      "number": "040-123456"
+	{ 
+		"id": 1,
+		"name": "Arto Hellas", 
+		"number": "040-123456"
     },
     { 
       "id": 2,
@@ -44,9 +47,9 @@ let persons = [
       "number": "12-43-234345"
     },
     { 
-      "id": 4,
-      "name": "Mary Poppendieck", 
-      "number": "39-23-6423122"
+		"id": 4,
+		"name": "Mary Poppendieck", 
+		"number": "39-23-6423122"
     }
 ]
 
@@ -56,8 +59,8 @@ app.get("/api/persons", (req, res) => {
 
 app.get("/info", (req, res) => {
 	res.send(`
-		<p>Phonebook has info for ${persons.length} people</p>
-		<p>${new Date()}</p>
+	<p>Phonebook has info for ${persons.length} people</p>
+	<p>${new Date()}</p>
 	`)
 })
 
@@ -75,21 +78,21 @@ app.get("/api/persons/:id", (req, res) => {
 app.delete("/api/persons/:id", (req, res) => {
 	const id = parseInt(req.params.id)
 	persons = persons.filter(person => person.id !== id)
-
+	
 	res.status(204).end()
 })
 
 app.post("/api/persons", (req, res) => {
 	const person = req.body
-
+	
 	if(!person.number || !person.name){
 		return res.status(400).send({error: "Name or number is missing"})
 	}
-
+	
 	if(persons.find(p => p.name === person.name)){
 		return res.status(400).send({error: "Name must be unique"})
 	}
-
+	
 	const newPerson = {
 		id: Math.floor(Math.random()*1000000),
 		name: person.name,
@@ -105,5 +108,6 @@ const unknownEndpoint = (req, res) => {
 
 app.use(unknownEndpoint)
 
-app.listen(PORT)
-console.log(`Running on port ${PORT}`)
+app.listen(PORT, () => {
+	console.log(`Running on port ${PORT}`)
+})
